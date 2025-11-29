@@ -142,6 +142,7 @@ Add to your Cursor MCP settings:
    - `GALLICA_BASE_URL` (optional, default: `https://gallica.bnf.fr`)
    - `GALLICA_SRU_URL` (optional, default: `https://gallica.bnf.fr/SRU`)
    - `LOG_LEVEL` (optional, default: `info`)
+   - `MCP_ICON_URL` (optional, absolute URL to icon - defaults to `/icon.svg` relative to server URL)
 
 3. **Deploy:**
    ```bash

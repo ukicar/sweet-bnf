@@ -7,6 +7,13 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { createMCPServer, handleRequestDirectly } from './mcpServer.js';
 import { logger } from './logging.js';
 import type { IncomingMessage, ServerResponse } from 'http';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 let serverInstance: Server | null = null;
 
@@ -49,6 +56,25 @@ export default async function handler(
     logger.info('[HTTP] Getting MCP server instance...');
     const server = await getServer();
     logger.info('[HTTP] MCP server instance ready');
+    
+    // Handle icon/favicon requests
+    if (req.method === 'GET' && (req.url === '/icon.svg' || req.url === '/favicon.ico' || req.url === '/icon')) {
+      logger.info(`[HTTP] Serving icon: ${req.url}`);
+      try {
+        const iconPath = join(__dirname, '..', 'public', 'icon.svg');
+        const iconContent = await readFile(iconPath, 'utf-8');
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+        res.writeHead(200);
+        res.end(iconContent);
+        logger.info('[HTTP] Icon served successfully');
+        return;
+      } catch (error) {
+        logger.warn(`[HTTP] Could not serve icon: ${error instanceof Error ? error.message : String(error)}`);
+        // Fall through to 404
+      }
+    }
     
     // Handle SSE connection (GET request)
     if (req.method === 'GET' && req.url === '/message') {

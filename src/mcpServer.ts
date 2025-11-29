@@ -38,6 +38,18 @@ import { createSequentialReportingTool } from './tools/reports.js';
 /**
  * Initialize and configure MCP server
  */
+/**
+ * Get the icon URL for the server
+ * Uses MCP_ICON_URL env var if set, otherwise returns relative path
+ */
+function getIconUrl(): string | undefined {
+  if (config.iconUrl) {
+    return config.iconUrl;
+  }
+  // Return relative path - client will resolve it based on server URL
+  return '/icon.svg';
+}
+
 export async function createMCPServer(): Promise<Server> {
   const server = new Server(
     {
@@ -178,6 +190,7 @@ export async function handleRequestDirectly(
       return result;
     }
     // Fallback: return basic initialize response
+    const iconUrl = getIconUrl();
     return {
       protocolVersion: '2024-11-05',
       capabilities: {
@@ -186,6 +199,7 @@ export async function handleRequestDirectly(
       serverInfo: {
         name: 'gallica-bnf-api',
         version: '1.0.0',
+        ...(iconUrl ? { icon: iconUrl } : {}),
       },
     };
   } else if (method === 'notifications/initialized') {

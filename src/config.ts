@@ -10,6 +10,7 @@ export interface Config {
   httpRetries: number;
   defaultMaxRecords: number;
   defaultStartRecord: number;
+  iconUrl?: string;
 }
 
 /**
@@ -48,6 +49,7 @@ export function loadConfig(): Config {
       process.env.DEFAULT_START_RECORD || String(DEFAULT_CONFIG.defaultStartRecord),
       10
     ),
+    ...(process.env.MCP_ICON_URL ? { iconUrl: process.env.MCP_ICON_URL } : {}), // Optional: absolute URL to icon, or relative path
   };
   
   // Log configuration on startup (but only if log level allows)
