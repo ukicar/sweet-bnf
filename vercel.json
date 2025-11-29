@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "src/httpServer.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",
