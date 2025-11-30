@@ -1,5 +1,5 @@
 /**
- * Vercel API route handler - catch-all route for MCP server
+ * Vercel API route handler - main entry point
  */
 import handler from '../src/httpServer.js';
 export default handler;
