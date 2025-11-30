@@ -1,6 +1,6 @@
 /**
  * Vercel API route handler - catch-all route for MCP server
- * Vercel passes the path segments as req.query.path
+ * Vercel passes the path segments as req.query.path (array or string)
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import handler from '../src/httpServer.js';
@@ -10,26 +10,44 @@ export default async function vercelHandler(
   res: VercelResponse
 ): Promise<void> {
   // Reconstruct the URL path from Vercel's path parameter
-  // The [...path] catch-all receives path segments as req.query.path (array)
+  // The [...path] catch-all receives path segments as req.query.path
   const pathSegments = req.query.path;
-  let url = req.url || '/';
+  let url = '/';
   
   // If path segments exist, reconstruct the URL
   if (pathSegments) {
     if (Array.isArray(pathSegments)) {
+      // Multiple path segments: ['message'] or ['api', 'message']
       url = '/' + pathSegments.join('/');
     } else if (typeof pathSegments === 'string') {
+      // Single path segment: 'message'
       url = '/' + pathSegments;
+    }
+  } else {
+    // No path segments means root path
+    url = '/';
+  }
+  
+  // Remove any query string that might be in the original req.url
+  // Vercel sometimes includes ?path=... in req.url
+  if (req.url) {
+    const urlWithoutQuery = req.url.split('?')[0];
+    // If req.url already has a path, use it (but clean it)
+    if (urlWithoutQuery && urlWithoutQuery !== '/api' && urlWithoutQuery !== '/api/') {
+      url = urlWithoutQuery;
     }
   }
   
-  // If URL doesn't start with /, add it
+  // Ensure URL starts with /
   if (!url.startsWith('/')) {
     url = '/' + url;
   }
   
   // Set the URL on the request object (Vercel's req is compatible with Node.js)
   (req as any).url = url;
+  
+  // Log for debugging
+  console.log(`[VERCEL] Reconstructed URL: ${url} from path segments:`, pathSegments);
   
   // Call the original handler - Vercel's req/res are compatible with Node.js types
   return handler(req as any, res as any);
